@@ -1,13 +1,16 @@
 package usecase_authSvc
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	config_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/config"
 	requestmodels_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/models/requestmodels"
 	responsemodels_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/models/responsemodels"
+	"github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/pb"
 	interfaceRepository_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/repository/interface"
 	interfaceUseCase_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/usecase/interface"
 	interface_smtp_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/go_smtp/interface"
@@ -25,6 +28,7 @@ type UserUseCase struct {
 	RegexUtli        interface_regex_authSvc.IRegexUtil
 	tokenSecurityKey *config_authSvc.Token
 	HashUtil         interface_hash_authSvc.IhashPassword
+	PostNrelClient   pb.PostNrelServiceClient
 }
 
 func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
@@ -33,7 +37,8 @@ func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
 	randNumUtil interface_randnumgene_authSvc.IRandGene,
 	regexUtli interface_regex_authSvc.IRegexUtil,
 	config *config_authSvc.Token,
-	hashUtil interface_hash_authSvc.IhashPassword) interfaceUseCase_authSvc.IUserUseCase {
+	hashUtil interface_hash_authSvc.IhashPassword,
+	postNrelClient *pb.PostNrelServiceClient) interfaceUseCase_authSvc.IUserUseCase {
 	return &UserUseCase{UserRepo: userRepo,
 		SmtpUtil:         smtpUtil,
 		JwtUtil:          jwtUtil,
@@ -41,6 +46,7 @@ func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
 		RegexUtli:        regexUtli,
 		tokenSecurityKey: config,
 		HashUtil:         hashUtil,
+		PostNrelClient:   *postNrelClient,
 	}
 }
 
@@ -271,22 +277,40 @@ func (r *UserUseCase) ResetPassword(userData *requestmodels_authSvc.ForgotPasswo
 	return nil
 }
 
-func (r *UserUseCase) UserProfile(userId *string) (*responsemodels_authSvc.UserProfile, error) {
-	userData, errU := r.UserRepo.GetUserDataLite(userId)
+func (r *UserUseCase) UserProfile(userId, userBId *string) (*responsemodels_authSvc.UserProfile, error) {
+	var actualId *string
+
+	if *userBId == "" {
+		actualId = userId
+	} else {
+		actualId = userBId
+	}
+	userData, errU := r.UserRepo.GetUserDataLite(actualId)
 	if errU != nil {
 		return nil, errU
 	}
-	// PostCount, errP := r.PostRepo.GetPostCountOfUser(userId)
-	// if errP != nil {
-	// 	return nil, errP
-	// }
-	// followerCount, followingCount, errC := r.RelationRepo.GetFollowerAndFollowingCountofUser(userId)
-	// if errC != nil {
-	// 	return nil, errC
-	// }
-	// userData.FollowersCount = *followerCount
-	// userData.FollowingCount = *followingCount
-	// userData.PostsCount = PostCount
+
+	context, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	respData, err := r.PostNrelClient.GetCountsForUserProfile(context, &pb.RequestUserIdPnR{
+		UserId: *actualId,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if respData.ErrorMessage != "" {
+		return nil, errors.New(respData.ErrorMessage)
+	}
+
+	userData.PostsCount = uint(respData.PostCount)
+	userData.FollowersCount = uint(respData.FollowerCount)
+	userData.FollowingCount = uint(respData.FollowingCount)
+
+	if *userBId != "" {
+
+		//get following stat
+	}
 
 	return userData, nil
 }
@@ -317,5 +341,64 @@ func (r *UserUseCase) EditUserDetails(editInput *requestmodels_authSvc.EditUserP
 	}
 
 	return nil
+}
 
+func (r *UserUseCase) GetUserDetailsLiteForPostView(userId *string) (*responsemodels_authSvc.UserDataLite, error) {
+
+	respData, err := r.UserRepo.GetUserProfileURLAndUserName(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return respData, nil
+}
+
+func (r *UserUseCase) CheckUserExist(userId *string) (bool, *error) {
+
+	boolStat, err := r.UserRepo.IsUserExistsByID(*userId)
+	if err != nil {
+		return boolStat, err
+	}
+	return boolStat, nil
+}
+
+func (r *UserUseCase) GetFollowersDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error) {
+
+	context, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	userIdsSlice, err := r.PostNrelClient.GetFollowersIds(context, &pb.RequestUserIdPnR{UserId: *userId})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if userIdsSlice.ErrorMessage != "" {
+		return nil, &err
+	}
+
+	userDetailsSlice, err := r.UserRepo.GetFollowersDetails(&userIdsSlice.UserIds)
+	if err != nil {
+		return nil, &err
+	}
+
+	return userDetailsSlice, nil
+}
+func (r *UserUseCase) GetFollowingsDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error) {
+
+	context, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	userIdsSlice, err := r.PostNrelClient.GetFollowingsIds(context, &pb.RequestUserIdPnR{UserId: *userId})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if userIdsSlice.ErrorMessage != "" {
+		return nil, &err
+	}
+
+	userDetailsSlice, err := r.UserRepo.GetFollowingsDetails(&userIdsSlice.UserIds)
+	if err != nil {
+		return nil, &err
+	}
+
+	return userDetailsSlice, nil
 }

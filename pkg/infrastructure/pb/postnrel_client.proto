@@ -1,0 +1,29 @@
+syntax="proto3";
+
+package postnrel_proto;
+
+
+option go_package="./pkg/infrastructure/pb";
+
+service PostNrelService{
+    rpc GetCountsForUserProfile(RequestUserIdPnR) returns (ResponseGetCounts);
+    rpc GetFollowersIds(RequestUserIdPnR) returns (ResposneGetUsersIds);
+    rpc GetFollowingsIds(RequestUserIdPnR) returns (ResposneGetUsersIds);
+
+}
+
+message RequestUserIdPnR{
+    string UserId=1;
+}
+
+message ResposneGetUsersIds{
+    string ErrorMessage=1;
+    repeated uint64 UserIds=2;
+}
+
+message ResponseGetCounts{
+    uint64 PostCount=1;
+    uint64 FollowerCount=2;
+    uint64 FollowingCount=3;
+    string ErrorMessage=4;
+}

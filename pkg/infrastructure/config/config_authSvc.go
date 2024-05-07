@@ -5,7 +5,8 @@ import (
 )
 
 type PortManager struct {
-	RunnerPort string `mapstructure:"PORTNO"`
+	RunnerPort     string `mapstructure:"PORTNO"`
+	PostNrelSvcUrl string `mapstructure:"POSTNREL_SVC_URL"`
 }
 
 type DataBase struct {

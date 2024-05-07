@@ -37,3 +37,15 @@ type UserProfile struct {
 	FollowedBy      string
 	FollowingStatus bool
 }
+
+type UserDataLite struct {
+	UserName          string
+	UserProfileImgURL string
+}
+
+type UserDataForList struct {
+	Id            uint64
+	Name          string
+	UserName      string
+	ProfileImgUrl string
+}

@@ -182,3 +182,85 @@ func (d *UserRepo) UpdateUserDetails(editInput *requestmodels_authSvc.EditUserPr
 
 	return nil
 }
+
+func (d *UserRepo) GetUserProfileURLAndUserName(userId *string) (*responsemodels_authSvc.UserDataLite, error) {
+
+	var resp responsemodels_authSvc.UserDataLite
+	query := "SELECT user_name,profile_img_url FROM users WHERE id=$1"
+	err := d.DB.Raw(query, userId).Scan(&resp)
+	if err.Error != nil {
+		return &resp, err.Error
+	} else if err.RowsAffected == 0 {
+		return nil, errors.New("no user with the specified user id found")
+	}
+	return &resp, nil
+}
+
+func (d *UserRepo) IsUserExistsByID(userID string) (bool, *error) {
+	var userCount int
+	query := "SELECT COUNT(*) FROM users WHERE id=$1 AND status!=$2"
+	err := d.DB.Raw(query, userID, "deleted").Row().Scan(&userCount)
+	if err != nil {
+		return false, &err
+	}
+	if userCount >= 1 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (d *UserRepo) GetFollowersDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error) {
+	var userDatas []responsemodels_authSvc.UserDataForList
+
+	interfaceIds := make([]interface{}, len(*userIds))
+	for i, id := range *userIds {
+		interfaceIds[i] = id
+	}
+
+	query := "SELECT id,name, user_name,profile_img_url FROM users WHERE id IN ("
+	for i := range *userIds {
+		// Add placeholder for each user ID
+		query += "?"
+		// Add comma if not the last user ID
+		if i < len(*userIds)-1 {
+			query += ","
+		}
+	}
+	query += ")"
+
+	err := d.DB.Raw(query, interfaceIds...).Scan(&userDatas).Error
+	if err != nil {
+		fmt.Println("------------", err)
+		return nil, err
+	}
+
+	return &userDatas, nil
+}
+
+func (d *UserRepo) GetFollowingsDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error) {
+	var userDatas []responsemodels_authSvc.UserDataForList
+
+	interfaceIds := make([]interface{}, len(*userIds))
+	for i, id := range *userIds {
+		interfaceIds[i] = id
+	}
+
+	query := "SELECT id,name, user_name,profile_img_url FROM users WHERE id IN ("
+	for i := range *userIds {
+		// Add placeholder for each user ID
+		query += "?"
+		// Add comma if not the last user ID
+		if i < len(*userIds)-1 {
+			query += ","
+		}
+	}
+	query += ")"
+
+	err := d.DB.Raw(query, interfaceIds...).Scan(&userDatas).Error
+	if err != nil {
+		fmt.Println("------------", err)
+		return nil, err
+	}
+
+	return &userDatas, nil
+}

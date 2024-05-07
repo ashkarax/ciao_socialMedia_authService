@@ -11,6 +11,11 @@ type IUserUseCase interface {
 	UserLogin(loginData *requestmodels_authSvc.UserLoginReq) (responsemodels_authSvc.UserLoginRes, error)
 	ForgotPasswordRequest(email *string) (*string, error)
 	ResetPassword(userData *requestmodels_authSvc.ForgotPasswordData, TempVerificationToken *string) error
-	UserProfile(userId *string) (*responsemodels_authSvc.UserProfile, error)
+	UserProfile(userId, UserBId *string) (*responsemodels_authSvc.UserProfile, error)
 	EditUserDetails(editInput *requestmodels_authSvc.EditUserProfile) error
+
+	GetUserDetailsLiteForPostView(userId *string) (*responsemodels_authSvc.UserDataLite, error)
+	CheckUserExist(userId *string) (bool, *error)
+	GetFollowersDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error)
+	GetFollowingsDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error)
 }

@@ -147,9 +147,9 @@ func (u *AuthService) AccessRegenerator(ctx context.Context, req *pb.RequestAcce
 
 }
 
-func (u *AuthService) GetUserProfile(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseUserProfile, error) {
+func (u *AuthService) GetUserProfile(ctx context.Context, req *pb.RequestGetUserProfile) (*pb.ResponseUserProfile, error) {
 
-	respData, err := u.userUseCase.UserProfile(&req.UserId)
+	respData, err := u.userUseCase.UserProfile(&req.UserId, &req.UserBId)
 	if err != nil {
 		return &pb.ResponseUserProfile{
 			ErrorMessage: err.Error(),
@@ -162,6 +162,9 @@ func (u *AuthService) GetUserProfile(ctx context.Context, req *pb.RequestUserId)
 		Bio:             respData.Bio,
 		Links:           respData.Links,
 		ProfileImageURL: respData.UserProfileImgURL,
+		PostsCount:      uint64(respData.PostsCount),
+		FollowerCount:   uint64(respData.FollowersCount),
+		FollowingCount:  uint64(respData.FollowingCount),
 	}, nil
 
 }
@@ -184,5 +187,88 @@ func (u *AuthService) EditUserProfile(ctx context.Context, req *pb.RequestEditUs
 	}
 
 	return &pb.ResponseErrorMessage{}, nil
+
+}
+
+func (u *AuthService) CheckUserExist(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseBool, error) {
+	stat, err := u.userUseCase.CheckUserExist(&req.UserId)
+	if err != nil {
+		return &pb.ResponseBool{
+			ErrorMessage: (*err).Error(),
+		}, nil
+	}
+	return &pb.ResponseBool{
+		ExistStatus: stat,
+	}, nil
+}
+
+func (u *AuthService) GetFollowersDetails(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseGetUsersDetails, error) {
+	respData, err := u.userUseCase.GetFollowersDetails(&req.UserId)
+	if err != nil {
+		return &pb.ResponseGetUsersDetails{
+			ErrorMessage: (*err).Error(),
+		}, nil
+	}
+
+	var respLoader []*pb.SingleResponseGetFollowers
+	for i := range *respData {
+		respLoader = append(respLoader, &pb.SingleResponseGetFollowers{
+			UserId:          (*respData)[i].Id,
+			Name:            (*respData)[i].Name,
+			UserName:        (*respData)[i].UserName,
+			ProfileImageURL: (*respData)[i].ProfileImgUrl})
+
+	}
+	return &pb.ResponseGetUsersDetails{
+		UserData: respLoader,
+	}, nil
+}
+func (u *AuthService) GetFollowingsDetails(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseGetUsersDetails, error) {
+	respData, err := u.userUseCase.GetFollowingsDetails(&req.UserId)
+	if err != nil {
+		return &pb.ResponseGetUsersDetails{
+			ErrorMessage: (*err).Error(),
+		}, nil
+	}
+
+	var respLoader []*pb.SingleResponseGetFollowers
+	for i := range *respData {
+		respLoader = append(respLoader, &pb.SingleResponseGetFollowers{
+			UserId:          (*respData)[i].Id,
+			Name:            (*respData)[i].Name,
+			UserName:        (*respData)[i].UserName,
+			ProfileImageURL: (*respData)[i].ProfileImgUrl})
+
+	}
+	return &pb.ResponseGetUsersDetails{
+		UserData: respLoader,
+	}, nil
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//<<<<<<<<<<<<<--------------------FROM POSTNREL SERVICE---------------->>>>>>>>>>>>>>>>>>>
+
+func (u *AuthService) GetUserDetailsLiteForPostView(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseUserDetailsLite, error) {
+
+	respData, err := u.userUseCase.GetUserDetailsLiteForPostView(&req.UserId)
+	if err != nil {
+		return &pb.ResponseUserDetailsLite{
+			ErrorMessage: err.Error(),
+		}, nil
+	}
+
+	return &pb.ResponseUserDetailsLite{
+		UserName:          respData.UserName,
+		UserProfileImgURL: respData.UserProfileImgURL,
+	}, nil
 
 }

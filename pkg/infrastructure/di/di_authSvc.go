@@ -3,6 +3,7 @@ package di_authSvc
 import (
 	"fmt"
 
+	client_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/client"
 	config_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/config"
 	db_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/db"
 	server_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/server"
@@ -30,10 +31,12 @@ func InitializeAuthServer(config *config_authSvc.Config) (*server_authSvc.AuthSe
 	randNumUtil := randnumgene_authSvc.NewRandomNumUtil()
 	regexUtli := regex_authSvc.NewRegexUtil()
 
-	userRepo := repository_authSvc.NewUserRepo(DB)
-	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil)
+	postNrelClient, err := client_authSvc.InitPostnrelServiceClient(config)
 
-	jwtUseCase := usecase_authSvc.NewJwtUseCase(&config.Token, jwtUtil,userRepo)
+	userRepo := repository_authSvc.NewUserRepo(DB)
+	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil,postNrelClient)
+
+	jwtUseCase := usecase_authSvc.NewJwtUseCase(&config.Token, jwtUtil, userRepo)
 
 	embeddingStruct := server_authSvc.NewAuthServiceServer(userUseCase, jwtUseCase)
 

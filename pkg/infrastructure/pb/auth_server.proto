@@ -15,8 +15,18 @@ service AuthService{
     rpc ResetPassword(RequestResetPass) returns (ResponseErrorMessage);
     rpc VerifyAccessToken(RequestVerifyAccess) returns (ResponseVerifyAccess);
     rpc AccessRegenerator(RequestAccessGenerator) returns (ResponseAccessGenerator);
-    rpc GetUserProfile(RequestUserId) returns (ResponseUserProfile);
+    rpc GetUserProfile(RequestGetUserProfile) returns (ResponseUserProfile);
     rpc EditUserProfile(RequestEditUserProfile) returns (ResponseErrorMessage);
+    rpc GetFollowersDetails(RequestUserId) returns (ResponseGetUsersDetails);
+    rpc GetFollowingsDetails(RequestUserId) returns (ResponseGetUsersDetails);
+
+
+
+    //postnrel client rpcs
+    rpc GetUserDetailsLiteForPostView(RequestUserId) returns (ResponseUserDetailsLite);
+    rpc CheckUserExist(RequestUserId) returns (ResponseBool);
+
+
 }
 
 
@@ -27,6 +37,28 @@ message ResponseErrorMessage{
     string ErrorMessage=1;
 }
 
+message SingleResponseGetFollowers{
+    uint64 UserId=4;
+    string Name=1;
+    string UserName=2;
+    string ProfileImageURL=3;
+}
+message ResponseGetUsersDetails{
+string ErrorMessage=1;
+repeated SingleResponseGetFollowers UserData=2;
+}
+
+message ResponseBool{
+    bool ExistStatus=1;
+    string ErrorMessage=2;
+}
+
+
+message ResponseUserDetailsLite{
+    string ErrorMessage=1;
+    string UserName=2;
+    string UserProfileImgURL=3;
+}
 
 message RequestEditUserProfile{
 string Name=1;
@@ -36,15 +68,20 @@ string Links=4;
 string UserId=5;
 }
 
+message RequestGetUserProfile{
+    string UserId=1;
+    string UserBId=2;
+}
+
 message ResponseUserProfile{
 string Name=1;
 string UserName=2;
 string Bio=3;
 string Links=4;
 string ProfileImageURL=5;
-string PostsCount=6;
-string FollowerCount=7;
-string FollowingCount=8;
+uint64 PostsCount=6;
+uint64 FollowerCount=7;
+uint64 FollowingCount=8;
 string ErrorMessage=9;
 }
 

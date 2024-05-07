@@ -27,4 +27,11 @@ type IUserRepo interface {
 	GetUserDataLite(userId *string) (*responsemodels_authSvc.UserProfile, error)
 
 	UpdateUserDetails(editInput *requestmodels_authSvc.EditUserProfile) error
+
+	GetUserProfileURLAndUserName(userId *string) (*responsemodels_authSvc.UserDataLite, error)
+
+	IsUserExistsByID(userID string) (bool, *error)
+
+	GetFollowersDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error)
+	GetFollowingsDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error)
 }
