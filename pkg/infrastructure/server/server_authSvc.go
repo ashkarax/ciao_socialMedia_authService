@@ -165,6 +165,7 @@ func (u *AuthService) GetUserProfile(ctx context.Context, req *pb.RequestGetUser
 		PostsCount:      uint64(respData.PostsCount),
 		FollowerCount:   uint64(respData.FollowersCount),
 		FollowingCount:  uint64(respData.FollowingCount),
+		FollowingStat:   respData.FollowingStatus,
 	}, nil
 
 }

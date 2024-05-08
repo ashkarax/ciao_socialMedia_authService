@@ -9,11 +9,22 @@ service PostNrelService{
     rpc GetCountsForUserProfile(RequestUserIdPnR) returns (ResponseGetCounts);
     rpc GetFollowersIds(RequestUserIdPnR) returns (ResposneGetUsersIds);
     rpc GetFollowingsIds(RequestUserIdPnR) returns (ResposneGetUsersIds);
+    rpc UserAFollowingUserBorNot(RequestFollowUnFollow) returns (ResponseUserABrelation);
+
 
 }
 
 message RequestUserIdPnR{
     string UserId=1;
+}
+
+message RequestFollowUnFollow{
+    string UserId=1;
+    string UserBId=2;
+}
+message ResponseUserABrelation{
+    bool BoolStat=1;
+    string ErrorMessage=2;
 }
 
 message ResposneGetUsersIds{

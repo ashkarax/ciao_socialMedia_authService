@@ -82,10 +82,10 @@ func (jwtUtil *JwtUtil) VerifyRefreshToken(accesToken string, securityKey string
 		return key, nil
 	})
 	if err != nil {
-		fmt.Println("-------", err)
-		return err
+		NewResp := err.Error() + ":RefreshToken"
+		fmt.Println("-----------", NewResp)
+		return errors.New(NewResp)
 	}
-
 	return nil
 }
 

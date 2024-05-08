@@ -285,9 +285,9 @@ func (r *UserUseCase) UserProfile(userId, userBId *string) (*responsemodels_auth
 	} else {
 		actualId = userBId
 	}
-	userData, errU := r.UserRepo.GetUserDataLite(actualId)
-	if errU != nil {
-		return nil, errU
+	userData, err := r.UserRepo.GetUserDataLite(actualId)
+	if err != nil {
+		return nil, err
 	}
 
 	context, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -309,7 +309,17 @@ func (r *UserUseCase) UserProfile(userId, userBId *string) (*responsemodels_auth
 
 	if *userBId != "" {
 
-		//get following stat
+		respStat, err := r.PostNrelClient.UserAFollowingUserBorNot(context, &pb.RequestFollowUnFollow{
+			UserId:  *userId,
+			UserBId: *userBId,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		if respData.ErrorMessage != "" {
+			return nil, errors.New(respData.ErrorMessage)
+		}
+		userData.FollowingStatus = respStat.BoolStat
 	}
 
 	return userData, nil

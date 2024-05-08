@@ -25,6 +25,7 @@ type PostNrelServiceClient interface {
 	GetCountsForUserProfile(ctx context.Context, in *RequestUserIdPnR, opts ...grpc.CallOption) (*ResponseGetCounts, error)
 	GetFollowersIds(ctx context.Context, in *RequestUserIdPnR, opts ...grpc.CallOption) (*ResposneGetUsersIds, error)
 	GetFollowingsIds(ctx context.Context, in *RequestUserIdPnR, opts ...grpc.CallOption) (*ResposneGetUsersIds, error)
+	UserAFollowingUserBorNot(ctx context.Context, in *RequestFollowUnFollow, opts ...grpc.CallOption) (*ResponseUserABrelation, error)
 }
 
 type postNrelServiceClient struct {
@@ -62,6 +63,15 @@ func (c *postNrelServiceClient) GetFollowingsIds(ctx context.Context, in *Reques
 	return out, nil
 }
 
+func (c *postNrelServiceClient) UserAFollowingUserBorNot(ctx context.Context, in *RequestFollowUnFollow, opts ...grpc.CallOption) (*ResponseUserABrelation, error) {
+	out := new(ResponseUserABrelation)
+	err := c.cc.Invoke(ctx, "/postnrel_proto.PostNrelService/UserAFollowingUserBorNot", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostNrelServiceServer is the server API for PostNrelService service.
 // All implementations must embed UnimplementedPostNrelServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type PostNrelServiceServer interface {
 	GetCountsForUserProfile(context.Context, *RequestUserIdPnR) (*ResponseGetCounts, error)
 	GetFollowersIds(context.Context, *RequestUserIdPnR) (*ResposneGetUsersIds, error)
 	GetFollowingsIds(context.Context, *RequestUserIdPnR) (*ResposneGetUsersIds, error)
+	UserAFollowingUserBorNot(context.Context, *RequestFollowUnFollow) (*ResponseUserABrelation, error)
 	mustEmbedUnimplementedPostNrelServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedPostNrelServiceServer) GetFollowersIds(context.Context, *Requ
 }
 func (UnimplementedPostNrelServiceServer) GetFollowingsIds(context.Context, *RequestUserIdPnR) (*ResposneGetUsersIds, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowingsIds not implemented")
+}
+func (UnimplementedPostNrelServiceServer) UserAFollowingUserBorNot(context.Context, *RequestFollowUnFollow) (*ResponseUserABrelation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserAFollowingUserBorNot not implemented")
 }
 func (UnimplementedPostNrelServiceServer) mustEmbedUnimplementedPostNrelServiceServer() {}
 
@@ -152,6 +166,24 @@ func _PostNrelService_GetFollowingsIds_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostNrelService_UserAFollowingUserBorNot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestFollowUnFollow)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostNrelServiceServer).UserAFollowingUserBorNot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/postnrel_proto.PostNrelService/UserAFollowingUserBorNot",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostNrelServiceServer).UserAFollowingUserBorNot(ctx, req.(*RequestFollowUnFollow))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PostNrelService_ServiceDesc is the grpc.ServiceDesc for PostNrelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var PostNrelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFollowingsIds",
 			Handler:    _PostNrelService_GetFollowingsIds_Handler,
+		},
+		{
+			MethodName: "UserAFollowingUserBorNot",
+			Handler:    _PostNrelService_UserAFollowingUserBorNot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

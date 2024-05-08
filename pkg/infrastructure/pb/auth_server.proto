@@ -82,6 +82,7 @@ string ProfileImageURL=5;
 uint64 PostsCount=6;
 uint64 FollowerCount=7;
 uint64 FollowingCount=8;
+bool FollowingStat=10;
 string ErrorMessage=9;
 }
 
