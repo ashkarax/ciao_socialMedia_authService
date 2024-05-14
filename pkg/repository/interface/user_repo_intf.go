@@ -32,6 +32,10 @@ type IUserRepo interface {
 
 	IsUserExistsByID(userID string) (bool, *error)
 
+	SearchUserByNameOrUserName(myId, searchText, limit, offset *string) (*[]responsemodels_authSvc.UserDataForList, error)
+
+	SetUserProfileImg(userId, imageUrl *string) error
+
 	GetFollowersDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error)
 	GetFollowingsDetails(userIds *[]uint64) (*[]responsemodels_authSvc.UserDataForList, error)
 }

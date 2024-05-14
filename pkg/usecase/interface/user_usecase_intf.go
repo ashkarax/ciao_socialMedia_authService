@@ -18,4 +18,7 @@ type IUserUseCase interface {
 	CheckUserExist(userId *string) (bool, *error)
 	GetFollowersDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error)
 	GetFollowingsDetails(userId *string) (*[]responsemodels_authSvc.UserDataForList, *error)
+
+	SearchUser(myId, searchText, limit, offset *string) (*[]responsemodels_authSvc.UserDataForList, error)
+	SetProfileImage(userId, contentType *string, Img *[]byte) error
 }

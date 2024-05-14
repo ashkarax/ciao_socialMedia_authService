@@ -13,6 +13,7 @@ import (
 	"github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/pb"
 	interfaceRepository_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/repository/interface"
 	interfaceUseCase_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/usecase/interface"
+	interface_awss3_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/aws_s3/interface"
 	interface_smtp_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/go_smtp/interface"
 	interface_hash_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/hash_password/interface"
 	interface_jwt_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/jwt.go/interface"
@@ -29,6 +30,7 @@ type UserUseCase struct {
 	tokenSecurityKey *config_authSvc.Token
 	HashUtil         interface_hash_authSvc.IhashPassword
 	PostNrelClient   pb.PostNrelServiceClient
+	AwsS3util        interface_awss3_authSvc.IAwsS3
 }
 
 func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
@@ -38,7 +40,8 @@ func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
 	regexUtli interface_regex_authSvc.IRegexUtil,
 	config *config_authSvc.Token,
 	hashUtil interface_hash_authSvc.IhashPassword,
-	postNrelClient *pb.PostNrelServiceClient) interfaceUseCase_authSvc.IUserUseCase {
+	postNrelClient *pb.PostNrelServiceClient,
+	awsS3util interface_awss3_authSvc.IAwsS3) interfaceUseCase_authSvc.IUserUseCase {
 	return &UserUseCase{UserRepo: userRepo,
 		SmtpUtil:         smtpUtil,
 		JwtUtil:          jwtUtil,
@@ -47,6 +50,7 @@ func NewUserUseCase(userRepo interfaceRepository_authSvc.IUserRepo,
 		tokenSecurityKey: config,
 		HashUtil:         hashUtil,
 		PostNrelClient:   *postNrelClient,
+		AwsS3util:        awsS3util,
 	}
 }
 
@@ -411,4 +415,34 @@ func (r *UserUseCase) GetFollowingsDetails(userId *string) (*[]responsemodels_au
 	}
 
 	return userDetailsSlice, nil
+}
+
+func (r *UserUseCase) SearchUser(myId, searchText, limit, offset *string) (*[]responsemodels_authSvc.UserDataForList, error) {
+
+	respData, err := r.UserRepo.SearchUserByNameOrUserName(myId, searchText, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return respData, nil
+}
+
+func (r *UserUseCase) SetProfileImage(userId, contentType *string, Img *[]byte) error {
+
+	BucketFolder := "ciao-socialmedia/userprofileimg/"
+
+	sess, err := r.AwsS3util.AWSSessionInitializer()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	mediaURL, err := r.AwsS3util.AWSS3MediaUploader(Img, contentType, sess, &BucketFolder)
+	if err != nil {
+		fmt.Printf("Error uploading file : %v\n", err)
+		return err
+	}
+	err = r.UserRepo.SetUserProfileImg(userId, mediaURL)
+	if err != nil {
+		return err
+	}
+	return nil
 }

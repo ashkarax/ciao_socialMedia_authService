@@ -9,6 +9,7 @@ import (
 	server_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/infrastructure/server"
 	repository_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/repository"
 	usecase_authSvc "github.com/ashkarax/ciao_socialMedia_authService/pkg/usecase"
+	aws_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/aws_s3"
 	gosmtp_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/go_smtp"
 	hashpassword_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/hash_password"
 	jwttoken_authSvc "github.com/ashkarax/ciao_socialMedia_authService/utils/jwt.go"
@@ -30,11 +31,12 @@ func InitializeAuthServer(config *config_authSvc.Config) (*server_authSvc.AuthSe
 	jwtUtil := jwttoken_authSvc.NewJwtUtil()
 	randNumUtil := randnumgene_authSvc.NewRandomNumUtil()
 	regexUtli := regex_authSvc.NewRegexUtil()
+	awsS3util := aws_authSvc.AWSS3FileUploaderSetup(config.AwsS3)
 
 	postNrelClient, err := client_authSvc.InitPostnrelServiceClient(config)
 
 	userRepo := repository_authSvc.NewUserRepo(DB)
-	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil,postNrelClient)
+	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil, postNrelClient,awsS3util)
 
 	jwtUseCase := usecase_authSvc.NewJwtUseCase(&config.Token, jwtUtil, userRepo)
 

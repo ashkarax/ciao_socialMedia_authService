@@ -29,7 +29,7 @@ type UserProfile struct {
 	UserName          string
 	Bio               string
 	Links             string
-	UserProfileImgURL string
+	UserProfileImgURL string ` gorm:"column:profile_img_url"`
 	PostsCount        uint
 	FollowersCount    uint
 	FollowingCount    uint
@@ -40,12 +40,12 @@ type UserProfile struct {
 
 type UserDataLite struct {
 	UserName          string
-	UserProfileImgURL string
+	UserProfileImgURL string ` gorm:"column:profile_img_url"`
 }
 
 type UserDataForList struct {
 	Id            uint64
 	Name          string
 	UserName      string
-	ProfileImgUrl string
+	ProfileImgUrl string ` gorm:"column:profile_img_url"`
 }

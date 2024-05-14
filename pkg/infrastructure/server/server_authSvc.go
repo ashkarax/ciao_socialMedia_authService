@@ -246,18 +246,6 @@ func (u *AuthService) GetFollowingsDetails(ctx context.Context, req *pb.RequestU
 	}, nil
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//<<<<<<<<<<<<<--------------------FROM POSTNREL SERVICE---------------->>>>>>>>>>>>>>>>>>>
-
 func (u *AuthService) GetUserDetailsLiteForPostView(ctx context.Context, req *pb.RequestUserId) (*pb.ResponseUserDetailsLite, error) {
 
 	respData, err := u.userUseCase.GetUserDetailsLiteForPostView(&req.UserId)
@@ -272,4 +260,39 @@ func (u *AuthService) GetUserDetailsLiteForPostView(ctx context.Context, req *pb
 		UserProfileImgURL: respData.UserProfileImgURL,
 	}, nil
 
+}
+
+func (u *AuthService) SearchUser(ctx context.Context, req *pb.RequestUserSearch) (*pb.ResponseUserSearch, error) {
+
+	respData, err := u.userUseCase.SearchUser(&req.UserId, &req.SearchText, &req.Limit, &req.Offset)
+	if err != nil {
+		return &pb.ResponseUserSearch{
+			ErrorMessage: err.Error(),
+		}, nil
+	}
+
+	var respSlice []*pb.SingleResponseGetFollowers
+	for i := range *respData {
+		respSlice = append(respSlice, &pb.SingleResponseGetFollowers{
+			UserId:          (*respData)[i].Id,
+			Name:            (*respData)[i].Name,
+			UserName:        (*respData)[i].UserName,
+			ProfileImageURL: (*respData)[i].ProfileImgUrl})
+	}
+
+	return &pb.ResponseUserSearch{
+		SearchResult: respSlice,
+	}, nil
+}
+
+func (u *AuthService) SetUserProfileImage(ctx context.Context, req *pb.RequestSetProfileImg) (*pb.ResponseErrorMessage, error) {
+
+	err := u.userUseCase.SetProfileImage(&req.UserId, &req.ContentType, &req.Img)
+	if err != nil {
+		return &pb.ResponseErrorMessage{
+			ErrorMessage: err.Error(),
+		}, nil
+	}
+
+	return &pb.ResponseErrorMessage{}, nil
 }

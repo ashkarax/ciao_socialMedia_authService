@@ -33,6 +33,8 @@ type AuthServiceClient interface {
 	EditUserProfile(ctx context.Context, in *RequestEditUserProfile, opts ...grpc.CallOption) (*ResponseErrorMessage, error)
 	GetFollowersDetails(ctx context.Context, in *RequestUserId, opts ...grpc.CallOption) (*ResponseGetUsersDetails, error)
 	GetFollowingsDetails(ctx context.Context, in *RequestUserId, opts ...grpc.CallOption) (*ResponseGetUsersDetails, error)
+	SearchUser(ctx context.Context, in *RequestUserSearch, opts ...grpc.CallOption) (*ResponseUserSearch, error)
+	SetUserProfileImage(ctx context.Context, in *RequestSetProfileImg, opts ...grpc.CallOption) (*ResponseErrorMessage, error)
 	// postnrel client rpcs
 	GetUserDetailsLiteForPostView(ctx context.Context, in *RequestUserId, opts ...grpc.CallOption) (*ResponseUserDetailsLite, error)
 	CheckUserExist(ctx context.Context, in *RequestUserId, opts ...grpc.CallOption) (*ResponseBool, error)
@@ -145,6 +147,24 @@ func (c *authServiceClient) GetFollowingsDetails(ctx context.Context, in *Reques
 	return out, nil
 }
 
+func (c *authServiceClient) SearchUser(ctx context.Context, in *RequestUserSearch, opts ...grpc.CallOption) (*ResponseUserSearch, error) {
+	out := new(ResponseUserSearch)
+	err := c.cc.Invoke(ctx, "/auth_proto.AuthService/SearchUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) SetUserProfileImage(ctx context.Context, in *RequestSetProfileImg, opts ...grpc.CallOption) (*ResponseErrorMessage, error) {
+	out := new(ResponseErrorMessage)
+	err := c.cc.Invoke(ctx, "/auth_proto.AuthService/SetUserProfileImage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) GetUserDetailsLiteForPostView(ctx context.Context, in *RequestUserId, opts ...grpc.CallOption) (*ResponseUserDetailsLite, error) {
 	out := new(ResponseUserDetailsLite)
 	err := c.cc.Invoke(ctx, "/auth_proto.AuthService/GetUserDetailsLiteForPostView", in, out, opts...)
@@ -178,6 +198,8 @@ type AuthServiceServer interface {
 	EditUserProfile(context.Context, *RequestEditUserProfile) (*ResponseErrorMessage, error)
 	GetFollowersDetails(context.Context, *RequestUserId) (*ResponseGetUsersDetails, error)
 	GetFollowingsDetails(context.Context, *RequestUserId) (*ResponseGetUsersDetails, error)
+	SearchUser(context.Context, *RequestUserSearch) (*ResponseUserSearch, error)
+	SetUserProfileImage(context.Context, *RequestSetProfileImg) (*ResponseErrorMessage, error)
 	// postnrel client rpcs
 	GetUserDetailsLiteForPostView(context.Context, *RequestUserId) (*ResponseUserDetailsLite, error)
 	CheckUserExist(context.Context, *RequestUserId) (*ResponseBool, error)
@@ -220,6 +242,12 @@ func (UnimplementedAuthServiceServer) GetFollowersDetails(context.Context, *Requ
 }
 func (UnimplementedAuthServiceServer) GetFollowingsDetails(context.Context, *RequestUserId) (*ResponseGetUsersDetails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowingsDetails not implemented")
+}
+func (UnimplementedAuthServiceServer) SearchUser(context.Context, *RequestUserSearch) (*ResponseUserSearch, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchUser not implemented")
+}
+func (UnimplementedAuthServiceServer) SetUserProfileImage(context.Context, *RequestSetProfileImg) (*ResponseErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetUserProfileImage not implemented")
 }
 func (UnimplementedAuthServiceServer) GetUserDetailsLiteForPostView(context.Context, *RequestUserId) (*ResponseUserDetailsLite, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetailsLiteForPostView not implemented")
@@ -438,6 +466,42 @@ func _AuthService_GetFollowingsDetails_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SearchUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestUserSearch)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SearchUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth_proto.AuthService/SearchUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SearchUser(ctx, req.(*RequestUserSearch))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_SetUserProfileImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestSetProfileImg)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SetUserProfileImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth_proto.AuthService/SetUserProfileImage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SetUserProfileImage(ctx, req.(*RequestSetProfileImg))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_GetUserDetailsLiteForPostView_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestUserId)
 	if err := dec(in); err != nil {
@@ -524,6 +588,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFollowingsDetails",
 			Handler:    _AuthService_GetFollowingsDetails_Handler,
+		},
+		{
+			MethodName: "SearchUser",
+			Handler:    _AuthService_SearchUser_Handler,
+		},
+		{
+			MethodName: "SetUserProfileImage",
+			Handler:    _AuthService_SetUserProfileImage_Handler,
 		},
 		{
 			MethodName: "GetUserDetailsLiteForPostView",

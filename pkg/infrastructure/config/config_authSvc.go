@@ -31,11 +31,19 @@ type Smtp struct {
 	SmtpPort     string `mapstructure:"SMTP_PORT"`
 }
 
+type AWS struct {
+	Region     string `mapstructure:"AWS_REGION"`
+	AccessKey  string `mapstructure:"AWS_ACCESS_KEY_ID"`
+	SecrectKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	Endpoint   string `mapstructure:"AWS_ENDPOINT"`
+}
+
 type Config struct {
 	PortMngr PortManager
 	DB       DataBase
 	Token    Token
 	Smtp     Smtp
+	AwsS3    AWS
 }
 
 func LoadConfig() (*Config, error) {
@@ -43,6 +51,7 @@ func LoadConfig() (*Config, error) {
 	var db DataBase
 	var token Token
 	var smtp Smtp
+	var awsS3 AWS
 
 	viper.AddConfigPath("./pkg/infrastructure/config/envs")
 	viper.SetConfigName("dev")
@@ -71,8 +80,12 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = viper.Unmarshal(&awsS3)
+	if err != nil {
+		return nil, err
+	}
 
-	config := Config{PortMngr: portmngr, DB: db, Token: token, Smtp: smtp}
+	config := Config{PortMngr: portmngr, DB: db, Token: token, Smtp: smtp, AwsS3: awsS3}
 	return &config, nil
 
 }

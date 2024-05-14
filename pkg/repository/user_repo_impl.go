@@ -264,3 +264,24 @@ func (d *UserRepo) GetFollowingsDetails(userIds *[]uint64) (*[]responsemodels_au
 
 	return &userDatas, nil
 }
+
+func (d *UserRepo) SearchUserByNameOrUserName(myId, searchText, limit, offset *string) (*[]responsemodels_authSvc.UserDataForList, error) {
+
+	var resp []responsemodels_authSvc.UserDataForList
+
+	query := "SELECT id,name,user_name,profile_img_url FROM users WHERE (name ILIKE $1 OR user_name ILIKE $1) AND status='active' AND id != $2 LIMIT $3 OFFSET $4"
+	err := d.DB.Raw(query, "%"+*searchText+"%", myId, limit, offset).Scan(&resp).Error
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+func (d *UserRepo) SetUserProfileImg(userId, imageUrl *string) error {
+	query := "UPDATE users SET profile_img_url=$1 WHERE id=$2"
+	err := d.DB.Exec(query, imageUrl, userId).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
