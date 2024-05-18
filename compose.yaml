@@ -1,0 +1,39 @@
+version: '3.9'
+name: ciao_auth_service
+
+services:
+  postgresdb:
+    image: postgres:14
+    restart:  always
+    container_name: postgres_db_authsvc
+    shm_size: 128mb
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - ciao_net_bridge
+    volumes:
+      - project-volume:/var/lib/postgresql/data
+    hostname: postgresdb
+
+  ciao_auth:
+    image: ciao_auth_svc:production
+    build: .
+    restart: unless-stopped
+    container_name: auth_svc
+    depends_on:
+      - postgresdb
+    networks:
+      - ciao_net_bridge
+    ports:
+      - 50051:50051
+    environment:
+      - DBHOST=postgresdb
+      - DBPASSWORD=postgres
+
+
+networks:
+  ciao_net_bridge:
+    driver: bridge
+volumes:
+  project-volume:
+  
