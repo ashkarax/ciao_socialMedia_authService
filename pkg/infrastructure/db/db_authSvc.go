@@ -16,7 +16,7 @@ import (
 
 func ConnectDatabase(config *config_authSvc.DataBase, hashUtil interface_hash_authSvc.IhashPassword) (*gorm.DB, error) {
 
-	connectionString := fmt.Sprintf("host=%s user=%s password=%s port=%s", config.DBHost, config.DBUser, config.DBPassword, config.DBPort)
+	connectionString := fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable", config.DBHost, config.DBUser, config.DBPassword, config.DBPort)
 	sql, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		fmt.Println("-------", err)
@@ -38,8 +38,7 @@ func ConnectDatabase(config *config_authSvc.DataBase, hashUtil interface_hash_au
 		}
 	}
 
-	psqlInfo := fmt.Sprintf("host=%s user=%s dbname=%s port=%s password=%s", config.DBHost, config.DBUser, config.DBName, config.DBPort, config.DBPassword)
-	DB, dberr := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{
+	DB, dberr := gorm.Open(postgres.Open(connectionString), &gorm.Config{
 		NowFunc: func() time.Time {
 			return time.Now().UTC() // Set the timezone to UTC
 		},
