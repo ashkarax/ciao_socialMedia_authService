@@ -14,5 +14,5 @@ WORKDIR /project/ciao/
 COPY --from=stage1 /project/ciao/cmd/ciaoAuthSvcExec ./cmd/
 COPY --from=stage1 /project/ciao/dev.env ./
 
-EXPOSE 3000
+EXPOSE 50051
 ENTRYPOINT [ "/project/ciao/cmd/ciaoAuthSvcExec" ]
