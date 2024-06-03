@@ -1,4 +1,3 @@
-version: '3.9'
 name: ciao_auth_service
 
 services:

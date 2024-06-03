@@ -34,6 +34,27 @@ func main() {
 
 	pb.RegisterAuthServiceServer(grpcServer, server)
 
+	// Log every connection attempt to the server
+	go func() {
+		for {
+			conn, err := lis.Accept()
+			if err != nil {
+				log.Println("Error accepting connection:", err)
+				continue
+			}
+			log.Println("New connection from:", conn.RemoteAddr())
+
+			// Optionally read from the connection and log data (for demonstration purposes)
+			buf := make([]byte, 1024)
+			n, err := conn.Read(buf)
+			if err != nil {
+				log.Println("Error reading from connection:", err)
+				return
+			}
+			log.Printf("Received data: %s", string(buf[:n]))
+		}
+	}()
+
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to start Auth_service server:%v", err)
 	}
