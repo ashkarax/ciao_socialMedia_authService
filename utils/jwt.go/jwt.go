@@ -30,7 +30,7 @@ func (jwtUtil *JwtUtil) TempTokenForOtpVerification(securityKey string, email st
 func (jwtUtil *JwtUtil) GenerateRefreshToken(secretKey string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"exp": time.Now().Unix() + 604800,
+		"exp": time.Now().Unix() + 3600,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -47,7 +47,7 @@ func (jwtUtil *JwtUtil) GenerateRefreshToken(secretKey string) (string, error) {
 
 func (jwtUtil *JwtUtil) GenerateAcessToken(securityKey string, id string) (string, error) {
 	claims := jwt.MapClaims{
-		"exp": time.Now().Unix() + 3600,
+		"exp": time.Now().Unix() + 300,
 		"id":  id,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
