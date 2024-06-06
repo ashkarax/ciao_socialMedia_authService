@@ -15,7 +15,7 @@ func NewRegexUtil() interface_regex_authSvc.IRegexUtil {
 
 func (rgx *RegexUtil) IsValidUsername(username string) (bool, string) {
 	maxLength := 30
-	validChars := `[a-zA-Z0-9._]` // Allowed characters in username
+	validChars := `^[a-z0-9._]+$` // Allowed characters in username
 
 	if len(username) > maxLength {
 		return false, "Username cannot exceed 30 characters"

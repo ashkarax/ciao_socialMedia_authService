@@ -22,10 +22,10 @@ func InitializeAuthServer(config *config_authSvc.Config) (*server_authSvc.AuthSe
 	hashUtil := hashpassword_authSvc.NewHashUtil()
 
 	DB, err := db_authSvc.ConnectDatabase(&config.DB, hashUtil)
-	if err != nil {
-		fmt.Println("ERROR CONNECTING DB FROM DI.GO")
-		return nil, err
-	}
+		if err != nil {
+			fmt.Println("ERROR CONNECTING DB FROM DI.GO")
+			return nil, err
+		}
 
 	smtpUtil := gosmtp_authSvc.NewSmtpUtils(&config.Smtp)
 	jwtUtil := jwttoken_authSvc.NewJwtUtil()
@@ -34,9 +34,12 @@ func InitializeAuthServer(config *config_authSvc.Config) (*server_authSvc.AuthSe
 	awsS3util := aws_authSvc.AWSS3FileUploaderSetup(config.AwsS3)
 
 	postNrelClient, err := client_authSvc.InitPostnrelServiceClient(config)
+	if err != nil {
+		return nil, err
+	}
 
 	userRepo := repository_authSvc.NewUserRepo(DB)
-	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil, postNrelClient,awsS3util)
+	userUseCase := usecase_authSvc.NewUserUseCase(userRepo, smtpUtil, jwtUtil, randNumUtil, regexUtli, &config.Token, hashUtil, postNrelClient, awsS3util)
 
 	jwtUseCase := usecase_authSvc.NewJwtUseCase(&config.Token, jwtUtil, userRepo)
 
@@ -44,26 +47,3 @@ func InitializeAuthServer(config *config_authSvc.Config) (*server_authSvc.AuthSe
 
 	return embeddingStruct, nil
 }
-
-// func InitializeAPI(config config.Config) (*server.Authservice, error) {
-// 	DB, err := db.ConnectDatabase(config.DB)
-// 	if err != nil {
-// 		fmt.Println("ERROR CONNECTING DB FROM DI.GO")
-// 		return nil, err
-// 	}
-
-// 	productsvcClient := client.InitProductServiceClient(config.PortMngr.ProductSVCUrl)
-
-// 	userRepo := repository.NewUserRepo(DB)
-// 	userUseCase := usecase.NewUserUseCase(userRepo, &config.Token,productsvcClient)
-
-// 	restRepo := repository.NewRestaurantRepo(DB)
-// 	restUseCase := usecase.NewRestaurantUseCase(restRepo, &config.Token,productsvcClient)
-
-// 	jwtUseCase := usecase.NewJWTUseCase(userRepo)
-// 	jwtMiddleWare := middlewares.NewJWTTokenMiddleware(jwtUseCase, &config.Token)
-
-// 	embeddingStruct := server.NewAuthService(userUseCase, jwtMiddleWare, restUseCase)
-
-// 	return embeddingStruct, nil
-// }

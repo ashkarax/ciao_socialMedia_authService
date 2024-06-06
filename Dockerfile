@@ -14,6 +14,8 @@ WORKDIR /project/ciao/
 COPY --from=stage1 /project/ciao/cmd/ciaoAuthSvcExec ./cmd/
 COPY --from=stage1 /project/ciao/dev.env ./
 RUN apk update && apk add --no-cache ca-certificates
+RUN apk add tzdata
+
 
 EXPOSE 50051
 ENTRYPOINT [ "/project/ciao/cmd/ciaoAuthSvcExec" ]
